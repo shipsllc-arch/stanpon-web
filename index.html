@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>STANPON - うちの子スタンプメーカー</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      background-color: #f8f8f8;
+      padding: 40px;
+    }
+    h1 {
+      color: #2c3e50;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    .box {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 500px;
+      margin: 0 auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin: 15px 0 5px;
+      text-align: left;
+    }
+    input[type="file"],
+    select,
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #38bdf8;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #0ea5e9;
+    }
+    .preview {
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .preview img {
+      width: 100px;
+      height: 100px;
+      margin: 8px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>STANPON</h1>
+  <div class="box">
+    <p>愛犬の写真から<br><strong>16枚のLINEスタンプ</strong>を自動生成！</p>
+
+    <label for="imageUpload">写真を選ぶ</label>
+    <input type="file" id="imageUpload" accept="image/*">
+
+    <label for="dialectSelect">セリフの方言</label>
+    <select id="dialectSelect">
+      <option value="standard">標準語</option>
+      <option value="kansai">関西弁</option>
+      <option value="hakata">博多弁</option>
+      <option value="tohoku">東北弁</option>
+    </select>
+
+    <button onclick="generateStamps()">スタンプを作る</button>
+
+    <div class="preview" id="previewArea">
+      <!-- プレビュー画像 -->
+    </div>
+  </div>
+
+  <script>
+    function generateStamps() {
+      const preview = document.getElementById("previewArea");
+      preview.innerHTML = "";
+
+      for (let i = 1; i <= 16; i++) {
+        const img = document.createElement("img");
+        img.src = "https://placekitten.com/100/100?image=" + i;
+        img.alt = "スタンプ" + i;
+        preview.appendChild(img);
+      }
+
+      alert("（仮）スタンプ画像を16枚表示しました！");
+    }
+  </script>
+</body>
+</html>
