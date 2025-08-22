@@ -12,12 +12,6 @@
     }
     h1 {
       color: #2c3e50;
-      margin-bottom: 0;
-    }
-    p.sub {
-      margin-top: 4px;
-      color: #666;
-      font-size: 14px;
     }
     .box {
       background: white;
@@ -31,7 +25,7 @@
     select,
     button {
       width: 90%;
-      margin: 12px auto;
+      margin: 15px auto;
       padding: 12px;
       font-size: 16px;
       border-radius: 8px;
@@ -47,34 +41,24 @@
       background-color: #0ea5e9;
     }
     .preview {
-      margin-top: 24px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      margin-top: 30px;
     }
     .preview img {
-      width: 90px;
-      height: 90px;
-      margin: 6px;
+      width: 100px;
+      height: 100px;
+      margin: 8px;
       border-radius: 10px;
       border: 1px solid #ccc;
-    }
-    .note {
-      font-size: 12px;
-      color: #999;
-      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <h1>STANPON</h1>
-  <p class="sub">〜 愛犬の写真からLINEスタンプを作ろう！〜</p>
-
   <div class="box">
-    <p>STEP 1：画像を選んでください</p>
-    <input type="file" id="imageUpload" accept="image/*" disabled />
+    <p>愛犬の写真から16枚のLINEスタンプを自動生成！</p>
 
-    <p>STEP 2：セリフの方言を選んでください</p>
+    <input type="file" id="imageUpload" accept="image/*">
+    
     <select id="dialectSelect">
       <option value="standard">標準語</option>
       <option value="kansai">関西弁</option>
@@ -82,29 +66,50 @@
       <option value="tohoku">東北弁</option>
     </select>
 
-    <button onclick="generatePreview()">プレビュー画像を表示</button>
+    <button onclick="uploadImage()">スタンプを作る</button>
 
     <div class="preview" id="previewArea">
-      <!-- 仮プレビュー画像 -->
+      <!-- プレビュー画像 -->
     </div>
-
-    <p class="note">※ このページはデモ版です。本番処理は決済後に実行されます。</p>
   </div>
 
   <script>
-    function generatePreview() {
-      const preview = document.getElementById("previewArea");
-      preview.innerHTML = ""; // 初期化
+    async function uploadImage() {
+      const fileInput = document.getElementById('imageUpload');
+      const dialect = document.getElementById('dialectSelect').value;
 
-      // 仮の画像を2枚表示
-      for (let i = 1; i <= 2; i++) {
-        const img = document.createElement("img");
-        img.src = `https://placekitten.com/100/100?image=${i}`;
-        img.alt = `プレビュー${i}`;
-        preview.appendChild(img);
+      if (!fileInput.files[0]) {
+        alert("画像を選択してください！");
+        return;
       }
 
-      alert("（デモ）プレビュー画像を2枚表示しました！");
+      const formData = new FormData();
+      formData.append("image", fileInput.files[0]);
+      formData.append("dialect", dialect);
+
+      try {
+        const response = await fetch("http://localhost:3000/upload", {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result && result.imageUrls) {
+          const preview = document.getElementById("previewArea");
+          preview.innerHTML = "";
+          result.imageUrls.forEach(url => {
+            const img = document.createElement("img");
+            img.src = url;
+            preview.appendChild(img);
+          });
+        } else {
+          alert("画像処理に失敗しました。");
+        }
+      } catch (error) {
+        console.error("エラー:", error);
+        alert("サーバーとの通信に失敗しました。");
+      }
     }
   </script>
 </body>
