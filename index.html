@@ -1,105 +1,181 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>STANPON - うちの子スタンプメーカー</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: 'Arial', sans-serif;
-      text-align: center;
-      background-color: #f8f8f8;
-      padding: 40px;
+      background-color: #f0f4f8;
+      margin: 0;
+      padding: 0;
     }
-    h1 {
-      color: #2c3e50;
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-    .box {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      max-width: 500px;
-      margin: 0 auto;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin: 15px 0 5px;
-      text-align: left;
-    }
-    input[type="file"],
-    select,
-    button {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-    }
-    button {
+
+    header {
       background-color: #38bdf8;
       color: white;
-      border: none;
+      text-align: center;
+      padding: 30px 10px 20px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: 1px;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    main p {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input[type="file"] {
+      display: block;
+      margin: 0 auto 20px;
+      font-size: 1rem;
+    }
+
+    .preview-img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+
+    .dialect-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .dialect-buttons button {
+      background-color: #e0f2fe;
+      border: 1px solid #38bdf8;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      margin: 5px;
       cursor: pointer;
-      font-weight: bold;
     }
-    button:hover {
+
+    .dialect-buttons button.active {
+      background-color: #38bdf8;
+      color: white;
+    }
+
+    button.generate {
       background-color: #0ea5e9;
+      color: white;
+      font-size: 1.1rem;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
     }
-    .preview {
+
+    .preview-area {
       margin-top: 30px;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
     }
-    .preview img {
-      width: 100px;
-      height: 100px;
+
+    .preview-area img {
+      width: 90px;
+      height: 90px;
+      object-fit: cover;
       margin: 8px;
       border-radius: 10px;
       border: 1px solid #ccc;
     }
+
+    footer {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #666;
+      margin: 40px 0 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>STANPON</h1>
-  <div class="box">
-    <p>愛犬の写真から<br><strong>16枚のLINEスタンプ</strong>を自動生成！</p>
+  <header>
+    <h1>STANPON</h1>
+    <p>うちの子の写真から<br>LINEスタンプを自動生成！</p>
+  </header>
 
-    <label for="imageUpload">写真を選ぶ</label>
+  <main>
     <input type="file" id="imageUpload" accept="image/*">
+    <img id="imagePreview" class="preview-img" src="" alt="" style="display: none;">
 
-    <label for="dialectSelect">セリフの方言</label>
-    <select id="dialectSelect">
-      <option value="standard">標準語</option>
-      <option value="kansai">関西弁</option>
-      <option value="hakata">博多弁</option>
-      <option value="tohoku">東北弁</option>
-    </select>
-
-    <button onclick="generateStamps()">スタンプを作る</button>
-
-    <div class="preview" id="previewArea">
-      <!-- プレビュー画像 -->
+    <div class="dialect-buttons">
+      <button class="active" data-value="standard">標準語</button>
+      <button data-value="kansai">関西弁</button>
+      <button data-value="hakata">博多弁</button>
+      <button data-value="tohoku">東北弁</button>
     </div>
-  </div>
+
+    <button class="generate" onclick="generateStamps()">スタンプを作る</button>
+
+    <div class="preview-area" id="previewArea">
+      <!-- スタンプ画像表示エリア -->
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 STANPON
+  </footer>
 
   <script>
+    const imageInput = document.getElementById("imageUpload");
+    const previewImg = document.getElementById("imagePreview");
+    const dialectButtons = document.querySelectorAll(".dialect-buttons button");
+    let selectedDialect = "standard";
+
+    imageInput.addEventListener("change", function () {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          previewImg.src = e.target.result;
+          previewImg.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    dialectButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        dialectButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedDialect = btn.dataset.value;
+      });
+    });
+
     function generateStamps() {
       const preview = document.getElementById("previewArea");
       preview.innerHTML = "";
-
       for (let i = 1; i <= 16; i++) {
         const img = document.createElement("img");
         img.src = "https://placekitten.com/100/100?image=" + i;
         img.alt = "スタンプ" + i;
         preview.appendChild(img);
       }
-
-      alert("（仮）スタンプ画像を16枚表示しました！");
+      alert("（仮）スタンプ画像を16枚表示しました！ 選択された方言：" + selectedDialect);
     }
   </script>
 </body>
