@@ -2,113 +2,117 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>STANPON - うちの子スタンプメーカー</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>STANPON｜愛犬スタンプメーカー</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: sans-serif;
       text-align: center;
-      background-color: #f4f4f4;
-      padding: 40px;
+      padding: 2rem;
+      background-color: #f7f7f7;
     }
     h1 {
-      color: #2c3e50;
+      color: #333;
     }
-    .box {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 500px;
-      margin: 0 auto;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    input[type="file"],
-    select,
-    button {
+    .upload-area, .result-area {
+      margin: 2rem auto;
+      padding: 1rem;
+      border: 2px dashed #aaa;
+      border-radius: 10px;
+      background-color: #fff;
       width: 90%;
-      margin: 15px auto;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background-color: #38bdf8;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0ea5e9;
+      max-width: 500px;
     }
     .preview {
-      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
     }
     .preview img {
-      width: 100px;
-      height: 100px;
-      margin: 8px;
+      width: 160px;
+      height: auto;
       border-radius: 10px;
-      border: 1px solid #ccc;
+      box-shadow: 0 0 5px #ccc;
+    }
+    button {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      background-color: #0078D4;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+    select, input[type="file"] {
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>STANPON</h1>
-  <div class="box">
-    <p>愛犬の写真から16枚のLINEスタンプを自動生成！</p>
+  <h1>STANPON<br>愛犬の写真から16枚のLINEスタンプを自動生成！</h1>
 
-    <input type="file" id="imageUpload" accept="image/*">
-    
-    <select id="dialectSelect">
+  <div class="upload-area">
+    <input type="file" id="imageInput" accept="image/*" />
+    <br />
+    <label for="styleSelect">セリフ（方言）を選んでください：</label><br />
+    <select id="styleSelect">
       <option value="standard">標準語</option>
       <option value="kansai">関西弁</option>
       <option value="hakata">博多弁</option>
       <option value="tohoku">東北弁</option>
     </select>
+    <br />
+    <button onclick="generateStamps()">スタンプを作る</button>
+  </div>
 
-    <button onclick="uploadImage()">スタンプを作る</button>
-
-    <div class="preview" id="previewArea">
-      <!-- プレビュー画像 -->
-    </div>
+  <div class="result-area" id="resultArea" style="display: none;">
+    <h2>プレビュー（2枚表示）</h2>
+    <div class="preview" id="previewImages"></div>
   </div>
 
   <script>
-    async function uploadImage() {
-      const fileInput = document.getElementById('imageUpload');
-      const dialect = document.getElementById('dialectSelect').value;
+    async function generateStamps() {
+      const fileInput = document.getElementById('imageInput');
+      const style = document.getElementById('styleSelect').value;
+      const resultArea = document.getElementById('resultArea');
+      const previewDiv = document.getElementById('previewImages');
 
       if (!fileInput.files[0]) {
-        alert("画像を選択してください！");
+        alert('画像を選んでください。');
         return;
       }
 
       const formData = new FormData();
-      formData.append("image", fileInput.files[0]);
-      formData.append("dialect", dialect);
+      formData.append('image', fileInput.files[0]);
+      formData.append('style', style);
 
       try {
-        const response = await fetch("http://localhost:3000/upload", {
-          method: "POST",
+        const response = await fetch('http://localhost:3000/generate', {
+          method: 'POST',
           body: formData
         });
 
-        const result = await response.json();
+        const data = await response.json();
 
-        if (result && result.imageUrls) {
-          const preview = document.getElementById("previewArea");
-          preview.innerHTML = "";
-          result.imageUrls.forEach(url => {
-            const img = document.createElement("img");
+        if (data && data.images && data.images.length > 0) {
+          previewDiv.innerHTML = '';
+          data.images.slice(0, 2).forEach(url => {
+            const img = document.createElement('img');
             img.src = url;
-            preview.appendChild(img);
+            previewDiv.appendChild(img);
           });
+          resultArea.style.display = 'block';
         } else {
-          alert("画像処理に失敗しました。");
+          alert('画像の生成に失敗しました。');
         }
       } catch (error) {
-        console.error("エラー:", error);
-        alert("サーバーとの通信に失敗しました。");
+        console.error(error);
+        alert('エラーが発生しました。サーバーが動作しているか確認してください。');
       }
     }
   </script>
